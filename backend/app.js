@@ -1,26 +1,24 @@
+require('dotenv').config(); 
+
 const express = require('express')
-
-require('dotenv').config()
-
-const pool = require('./config/db')
+const {Sequelize } = require('sequelize')
+const tenantRoutes = require('./routes/tenant');
+const userRoutes = require('./routes/user')
 const app = express()
-app.use(express.json())
 
+const sequelize = new Sequelize(
 
-app.get('/test', async (req, res)=>{
-    try{
-        const result = await pool.query('SELECT NOW ()');
-        res.status(200).json({message: "Db connected and rows are "+ result.rows[0].now})
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
+    {
+        host: process.env.HOST,
+        dialect: 'postgres'
     }
-    catch(error){
-        console.error(error)
-        res.status(500).json({error : "Db not connected"})
+);
 
-    }
-})
+app.use(express.json()); 
+app.use('/tenants', tenantRoutes); 
+app.use('/users', userRoutes);
 
-const PORT = 3000;
-
-app.listen(PORT, ()=>{
-    console.log('The server is up and running')
-})
+app.listen(3000, ()=>{console.log("server is running")})
